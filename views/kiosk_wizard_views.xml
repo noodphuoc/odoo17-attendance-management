@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_attendance_kiosk_form" model="ir.ui.view">
+        <field name="name">attendance.kiosk.wizard.form</field>
+        <field name="model">attendance.kiosk.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Màn hình Kiosk Chấm công">
+                <div class="text-center p-3 mb-3" style="background-color: #f8f9fa; border-radius: 8px;">
+                    <h2 style="color: #714B67; font-weight: bold;">MÁY CHẤM CÔNG TỰ ĐỘNG</h2>
+                    <p class="text-muted">Nhập mã nhân viên hoặc chọn tên của bạn để Check-in / Check-out</p>
+                </div>
+
+                <group>
+                    <field name="employee_code" placeholder="Ví dụ: NV01" style="font-size: 18px;"/>
+                    <field name="employee_id" options="{'no_create': True, 'no_open': True}"/>
+                </group>
+
+                <footer style="display: flex; justify-content: center; gap: 15px; margin-top: 20px;">
+                    <button string="XÁC NHẬN CHẤM CÔNG" 
+                            name="action_confirm_attendance" 
+                            type="object" 
+                            class="btn-primary btn-lg" 
+                            style="padding: 10px 30px; font-weight: bold;"/>
+                    <button string="Đóng" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_attendance_kiosk" model="ir.actions.act_window">
+        <field name="name">Kiosk Chấm công</field>
+        <field name="res_model">attendance.kiosk.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

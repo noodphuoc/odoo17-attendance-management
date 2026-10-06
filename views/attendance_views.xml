@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Tree View -->
+    <!-- 1. Tree View -->
     <record id="view_attendance_tree" model="ir.ui.view">
         <field name="name">attendance.record.tree</field>
         <field name="model">attendance.record</field>
@@ -21,14 +21,13 @@
         </field>
     </record>
 
-    <!-- Form View (Có nút Check-out theo nghiệp vụ) -->
+    <!-- 2. Form View -->
     <record id="view_attendance_form" model="ir.ui.view">
         <field name="name">attendance.record.form</field>
         <field name="model">attendance.record</field>
         <field name="arch" type="xml">
             <form string="Chi tiết chấm công">
                 <header>
-                    <!-- Nút bấm Chấm công ra -->
                     <button name="action_check_out" string="Chấm công ra" type="object" 
                             class="oe_highlight" invisible="check_out != False"/>
                     <field name="status" widget="statusbar" statusbar_visible="working,on_time,late"/>
@@ -51,7 +50,7 @@
         </field>
     </record>
 
-    <!-- Biểu đồ Graph View cho Dashboard Thống kê -->
+    <!-- 3. Graph View cho Dashboard -->
     <record id="view_attendance_graph" model="ir.ui.view">
         <field name="name">attendance.record.graph</field>
         <field name="model">attendance.record</field>
@@ -63,7 +62,7 @@
         </field>
     </record>
 
-    <!-- Bảng phân tích Pivot View cho Báo cáo -->
+    <!-- 4. Pivot View cho Dashboard -->
     <record id="view_attendance_pivot" model="ir.ui.view">
         <field name="name">attendance.record.pivot</field>
         <field name="model">attendance.record</field>
@@ -76,7 +75,7 @@
         </field>
     </record>
 
-    <!-- Search View -->
+    <!-- 5. Search View -->
     <record id="view_attendance_search" model="ir.ui.view">
         <field name="name">attendance.record.search</field>
         <field name="model">attendance.record</field>
@@ -98,8 +97,22 @@
         </field>
     </record>
 
-    <!-- Action -->
-    <!-- Thêm Action riêng cho Báo cáo & Thống kê (Mặc định mở Biểu đồ Graph & Pivot) -->
+    <!-- 6. Action cho Chấm công thường (action_attendance) -->
+    <!-- Action Chấm công: Luôn hiển thị bảng lịch sử, phía trên có bộ lọc hôm nay -->
+    <record id="action_attendance" model="ir.actions.act_window">
+        <field name="name">Lịch sử Chấm công</field>
+        <field name="res_model">attendance.record</field>
+        <field name="view_mode">tree,form,graph,pivot</field>
+        <field name="search_view_id" ref="view_attendance_search"/>
+        <field name="context">{}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Bấm vào nút "Tạo mới" hoặc dùng chức năng Check-in để bắt đầu ca làm việc!
+            </p>
+        </field>
+    </record>
+
+    <!-- 7. Action cho Báo cáo & Thống kê (action_attendance_report_dashboard) -->
     <record id="action_attendance_report_dashboard" model="ir.actions.act_window">
         <field name="name">Báo cáo &amp; Thống kê Chấm công</field>
         <field name="res_model">attendance.record</field>

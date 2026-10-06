@@ -75,3 +75,64 @@ class AttendanceRecord(models.Model):
         for rec in self:
             if not rec.check_out:
                 rec.check_out = fields.Datetime.now()
+
+    # Hàm dành riêng cho Nhân viên tự bấm Chấm công vào (Self Check-in)
+    @api.model
+    def action_employee_check_in(self):
+        # 1. Tự động tìm nhân viên ứng với tài khoản đang đăng nhập
+        employee = self.env['attendance.employee'].search([('user_id', '=', self.env.uid)], limit=1)
+        if not employee:
+            raise ValidationError("Tài khoản của bạn chưa được liên kết với hồ sơ Nhân viên nào trong hệ thống! Vui lòng báo HR.")
+        
+        # 2. Kiểm tra xem có ca làm dở dang chưa
+        open_record = self.search([
+            ('employee_id', '=', employee.id),
+            ('check_out', '=', False)
+        ], limit=1)
+        if open_record:
+            raise ValidationError(f"Bạn đã chấm công vào lúc {open_record.check_in.strftime('%H:%M')} rồi và chưa chấm công ra!")
+
+        # 3. Tạo lượt chấm công mới
+        new_record = self.create({
+            'employee_id': employee.id,
+            'date': fields.Date.context_today(self),
+            'check_in': fields.Datetime.now(),
+        })
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'Check-in thành công!',
+                'message': f"Xin chào {employee.name}, bạn đã bắt đầu ca làm việc.",
+                'type': 'success',
+                'sticky': False,
+                'next': {'type': 'ir.actions.client', 'tag': 'reload'}
+            }
+        }
+
+    # Hàm dành riêng cho Nhân viên tự bấm Chấm công ra (Self Check-out)
+    @api.model
+    def action_employee_check_out(self):
+        employee = self.env['attendance.employee'].search([('user_id', '=', self.env.uid)], limit=1)
+        if not employee:
+            raise ValidationError("Tài khoản của bạn chưa được liên kết với hồ sơ Nhân viên nào!")
+        
+        open_record = self.search([
+            ('employee_id', '=', employee.id),
+            ('check_out', '=', False)
+        ], limit=1)
+        if not open_record:
+            raise ValidationError("Bạn chưa thực hiện Chấm công vào hôm nay!")
+
+        open_record.action_check_out()
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'Check-out thành công!',
+                'message': f"Tạm biệt {employee.name}. Tổng giờ làm ca này: {open_record.work_hours} giờ.",
+                'type': 'warning',
+                'sticky': False,
+                'next': {'type': 'ir.actions.client', 'tag': 'reload'}
+            }
+        }
