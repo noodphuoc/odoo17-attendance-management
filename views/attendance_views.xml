@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Tree View -->
+    <record id="view_attendance_tree" model="ir.ui.view">
+        <field name="name">attendance.record.tree</field>
+        <field name="model">attendance.record</field>
+        <field name="arch" type="xml">
+            <tree string="Bản ghi chấm công">
+                <field name="employee_id"/>
+                <field name="department"/>
+                <field name="date"/>
+                <field name="check_in"/>
+                <field name="check_out"/>
+                <field name="work_hours" widget="float_time"/>
+                <field name="status" widget="badge"
+                       decoration-success="status == 'on_time'"
+                       decoration-danger="status == 'late'"
+                       decoration-warning="status == 'working'"
+                       decoration-info="status == 'completed'"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form View (Có nút Check-out theo nghiệp vụ) -->
+    <record id="view_attendance_form" model="ir.ui.view">
+        <field name="name">attendance.record.form</field>
+        <field name="model">attendance.record</field>
+        <field name="arch" type="xml">
+            <form string="Chi tiết chấm công">
+                <header>
+                    <!-- Nút bấm Chấm công ra -->
+                    <button name="action_check_out" string="Chấm công ra" type="object" 
+                            class="oe_highlight" invisible="check_out != False"/>
+                    <field name="status" widget="statusbar" statusbar_visible="working,on_time,late"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group string="Nhân sự">
+                            <field name="employee_id"/>
+                            <field name="department"/>
+                            <field name="date"/>
+                        </group>
+                        <group string="Thời gian">
+                            <field name="check_in"/>
+                            <field name="check_out"/>
+                            <field name="work_hours" widget="float_time"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Biểu đồ Graph View cho Dashboard Thống kê -->
+    <record id="view_attendance_graph" model="ir.ui.view">
+        <field name="name">attendance.record.graph</field>
+        <field name="model">attendance.record</field>
+        <field name="arch" type="xml">
+            <graph string="Thống kê giờ làm theo phòng ban" type="bar">
+                <field name="department"/>
+                <field name="work_hours" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Bảng phân tích Pivot View cho Báo cáo -->
+    <record id="view_attendance_pivot" model="ir.ui.view">
+        <field name="name">attendance.record.pivot</field>
+        <field name="model">attendance.record</field>
+        <field name="arch" type="xml">
+            <pivot string="Phân tích chấm công">
+                <field name="employee_id" type="row"/>
+                <field name="date" interval="month" type="col"/>
+                <field name="work_hours" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="view_attendance_search" model="ir.ui.view">
+        <field name="name">attendance.record.search</field>
+        <field name="model">attendance.record</field>
+        <field name="arch" type="xml">
+            <search string="Tìm kiếm chấm công">
+                <field name="employee_id"/>
+                <field name="date"/>
+                <filter string="Hôm nay" name="today" domain="[('date', '=', context_today())]"/>
+                <filter string="Đi muộn" name="late" domain="[('status', '=', 'late')]"/>
+                <filter string="Đang làm việc" name="working" domain="[('status', '=', 'working')]"/>
+                <separator/>
+                <group expand="0" string="Gom nhóm">
+                    <filter string="Nhân viên" name="group_employee" context="{'group_by': 'employee_id'}"/>
+                    <filter string="Phòng ban" name="group_dept" context="{'group_by': 'department'}"/>
+                    <filter string="Ngày" name="group_date" context="{'group_by': 'date'}"/>
+                    <filter string="Trạng thái" name="group_status" context="{'group_by': 'status'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_attendance" model="ir.actions.act_window">
+        <field name="name">Bản ghi Chấm công</field>
+        <field name="res_model">attendance.record</field>
+        <field name="view_mode">tree,form,graph,pivot</field>
+        <field name="search_view_id" ref="view_attendance_search"/>
+        <field name="context">{'search_default_today': 1}</field>
+    </record>
+</odoo>

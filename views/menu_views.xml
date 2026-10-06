@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Menu gốc (Root Menu) -->
+    <menuitem id="menu_attendance_root"
+              name="Quản lý Chấm công"
+              web_icon="attendance_management,static/description/icon.png"
+              sequence="10"/>
+
+    <!-- Menu con 1: Nghiệp vụ chấm công -->
+    <menuitem id="menu_attendance_record"
+              name="Chấm công"
+              parent="menu_attendance_root"
+              action="action_attendance"
+              sequence="10"/>
+
+    <!-- Menu con 2: Quản lý nhân sự -->
+    <menuitem id="menu_attendance_employee"
+              name="Nhân viên"
+              parent="menu_attendance_root"
+              action="action_employee"
+              sequence="20"
+              groups="group_attendance_hr,group_attendance_admin"/>
+
+    <!-- Menu con 3: Báo cáo & Thống kê -->
+    <menuitem id="menu_attendance_report"
+              name="Báo cáo &amp; Thống kê"
+              parent="menu_attendance_root"
+              action="action_attendance"
+              sequence="30"
+              groups="group_attendance_hr,group_attendance_admin"/>
+</odoo>

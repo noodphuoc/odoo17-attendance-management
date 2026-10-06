@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_employee_user,attendance.employee.user,model_attendance_employee,group_attendance_employee,1,0,0,0
+access_employee_hr,attendance.employee.hr,model_attendance_employee,group_attendance_hr,1,1,1,0
+access_employee_admin,attendance.employee.admin,model_attendance_employee,group_attendance_admin,1,1,1,1
+access_attendance_user,attendance.record.user,model_attendance_record,group_attendance_employee,1,1,1,0
+access_attendance_hr,attendance.record.hr,model_attendance_record,group_attendance_hr,1,1,1,1
+access_attendance_admin,attendance.record.admin,model_attendance_record,group_attendance_admin,1,1,1,1
