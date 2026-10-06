@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ==================== 1. BÁO CÁO CHO CHẤM CÔNG (ATTENDANCE) ==================== -->
+    <record id="action_report_attendance_record" model="ir.actions.report">
+        <field name="name">Bảng chấm công chi tiết (PDF)</field>
+        <field name="model">attendance.record</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">attendance_management.report_attendance_template</field>
+        <field name="report_file">attendance_management.report_attendance_template</field>
+        <field name="binding_model_id" ref="model_attendance_record"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <template id="report_attendance_template">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <div class="page" style="font-family: 'Arial', sans-serif;">
+                    <div class="text-center mb-4">
+                        <h2 style="font-weight: bold; color: #7C4776;">BẢNG TỔNG HỢP CHẤM CÔNG CHI TIẾT</h2>
+                        <p><i>Ngày xuất báo cáo: <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d/%m/%Y %H:%M:%S')"/></i></p>
+                    </div>
+
+                    <table class="table table-bordered table-sm text-center" style="width: 100%; border-collapse: collapse;">
+                        <thead style="background-color: #f2f2f2;">
+                            <tr>
+                                <th style="width: 5%;">STT</th>
+                                <th style="width: 25%; text-align: left;">Họ và tên</th>
+                                <th style="width: 15%;">Phòng ban</th>
+                                <th style="width: 12%;">Ngày</th>
+                                <th style="width: 12%;">Giờ vào</th>
+                                <th style="width: 12%;">Giờ ra</th>
+                                <th style="width: 10%;">Tổng giờ</th>
+                                <th style="width: 12%;">Trạng thái</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-set="stt" t-value="1"/>
+                            <t t-set="total_hours" t-value="0.0"/>
+                            <t t-foreach="docs" t-as="line">
+                                <tr>
+                                    <td><t t-esc="stt"/></td>
+                                    <td style="text-align: left; font-weight: bold;"><t t-esc="line.employee_id.name"/></td>
+                                    <td>
+                                        <t t-if="line.department == 'it'">CNTT</t>
+                                        <t t-elif="line.department == 'hr'">Hành chính NS</t>
+                                        <t t-elif="line.department == 'sales'">Kinh doanh</t>
+                                        <t t-elif="line.department == 'accounting'">Kế toán</t>
+                                        <t t-else="">Khác</t>
+                                    </td>
+                                    <td><span t-field="line.date" t-options='{"format": "dd/MM/yyyy"}'/></td>
+                                    <td><span t-field="line.check_in" t-options='{"format": "HH:mm"}'/></td>
+                                    <td><span t-field="line.check_out" t-options='{"format": "HH:mm"}'/></td>
+                                    <td><span t-field="line.work_hours"/> giờ</td>
+                                    <td>
+                                        <t t-if="line.status == 'on_time'"><span style="color: green; font-weight: bold;">Đúng giờ</span></t>
+                                        <t t-elif="line.status == 'late'"><span style="color: red; font-weight: bold;">Đi muộn</span></t>
+                                        <t t-elif="line.status == 'working'"><span style="color: orange; font-weight: bold;">Đang làm việc</span></t>
+                                        <t t-else="">Hoàn thành</t>
+                                    </td>
+                                </tr>
+                                <t t-set="stt" t-value="stt + 1"/>
+                                <t t-set="total_hours" t-value="total_hours + line.work_hours"/>
+                            </t>
+                            <tr style="background-color: #f9f9f9; font-weight: bold;">
+                                <td colspan="6" class="text-right" style="text-align: right; padding-right: 15px;">Tổng cộng số giờ làm:</td>
+                                <td><t t-esc="'%.2f' % total_hours"/> giờ</td>
+                                <td></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="row mt-5" style="display: flex; justify-content: space-between; margin-top: 50px;">
+                        <div class="col-6 text-center" style="width: 50%; float: left; text-align: center;">
+                            <p style="font-weight: bold; margin-bottom: 70px;">NGƯỜI LẬP BIỂU</p>
+                            <p>(Ký, ghi rõ họ tên)</p>
+                        </div>
+                        <div class="col-6 text-center" style="width: 50%; float: right; text-align: center;">
+                            <p style="font-weight: bold; margin-bottom: 70px;">TRƯỞNG PHÒNG NHÂN SỰ</p>
+                            <p>(Ký, duyệt)</p>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+
+    <!-- ==================== 2. BÁO CÁO CHO HỒ SƠ NHÂN VIÊN (EMPLOYEE) ==================== -->
+    <record id="action_report_employee_attendance" model="ir.actions.report">
+        <field name="name">Phiếu hồ sơ &amp; Chấm công cá nhân (PDF)</field>
+        <field name="model">attendance.employee</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">attendance_management.report_employee_template</field>
+        <field name="report_file">attendance_management.report_employee_template</field>
+        <field name="binding_model_id" ref="model_attendance_employee"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <template id="report_employee_template">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="emp">
+                <t t-call="web.external_layout">
+                    <div class="page" style="font-family: 'Arial', sans-serif;">
+                        <div class="text-center mb-4">
+                            <h2 style="font-weight: bold; color: #7C4776;">PHIẾU TỔNG HỢP CÔNG NHÂN VIÊN</h2>
+                            <p><i>Mã nhân viên: <strong t-esc="emp.employee_code"/> — Họ tên: <strong t-esc="emp.name"/></i></p>
+                        </div>
+
+                        <!-- Bảng tóm tắt thông tin nhân sự -->
+                        <table class="table table-bordered table-sm mb-4" style="width: 100%;">
+                            <tr>
+                                <td style="width: 25%; font-weight: bold; background-color: #f9f9f9;">Phòng ban:</td>
+                                <td style="width: 25%;">
+                                    <t t-if="emp.department == 'it'">Công nghệ thông tin</t>
+                                    <t t-elif="emp.department == 'hr'">Hành chính nhân sự</t>
+                                    <t t-elif="emp.department == 'sales'">Kinh doanh</t>
+                                    <t t-elif="emp.department == 'accounting'">Kế toán</t>
+                                </td>
+                                <td style="width: 25%; font-weight: bold; background-color: #f9f9f9;">Chức vụ:</td>
+                                <td style="width: 25%;"><t t-esc="emp.position or 'Chưa cập nhật'"/></td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: bold; background-color: #f9f9f9;">Email:</td>
+                                <td><t t-esc="emp.email or '—'"/></td>
+                                <td style="font-weight: bold; background-color: #f9f9f9;">Số điện thoại:</td>
+                                <td><t t-esc="emp.phone or '—'"/></td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: bold; background-color: #f9f9f9;">Ngày vào làm:</td>
+                                <td><span t-field="emp.hire_date" t-options='{"format": "dd/MM/yyyy"}'/></td>
+                                <td style="font-weight: bold; background-color: #f9f9f9;">Trạng thái:</td>
+                                <td>
+                                    <t t-if="emp.status == 'working'"><span style="color: green; font-weight: bold;">Đang làm việc</span></t>
+                                    <t t-else=""><span style="color: red; font-weight: bold;">Đã nghỉ việc</span></t>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!-- Chi tiết lịch sử chấm công của nhân viên -->
+                        <h4 style="font-weight: bold; margin-top: 25px;">Lịch sử làm việc chi tiết:</h4>
+                        <table class="table table-bordered table-sm text-center" style="width: 100%;">
+                            <thead style="background-color: #f2f2f2;">
+                                <tr>
+                                    <th style="width: 10%;">STT</th>
+                                    <th style="width: 20%;">Ngày</th>
+                                    <th style="width: 20%;">Giờ vào</th>
+                                    <th style="width: 20%;">Giờ ra</th>
+                                    <th style="width: 15%;">Số giờ</th>
+                                    <th style="width: 15%;">Trạng thái</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-set="emp_stt" t-value="1"/>
+                                <t t-set="emp_total_hours" t-value="0.0"/>
+                                <t t-set="late_count" t-value="0"/>
+                                <t t-foreach="emp.attendance_ids" t-as="att">
+                                    <tr>
+                                        <td><t t-esc="emp_stt"/></td>
+                                        <td><span t-field="att.date" t-options='{"format": "dd/MM/yyyy"}'/></td>
+                                        <td><span t-field="att.check_in" t-options='{"format": "HH:mm"}'/></td>
+                                        <td><span t-field="att.check_out" t-options='{"format": "HH:mm"}'/></td>
+                                        <td><span t-field="att.work_hours"/> h</td>
+                                        <td>
+                                            <t t-if="att.status == 'on_time'"><span style="color: green;">Đúng giờ</span></t>
+                                            <t t-elif="att.status == 'late'">
+                                                <span style="color: red; font-weight: bold;">Đi muộn</span>
+                                                <t t-set="late_count" t-value="late_count + 1"/>
+                                            </t>
+                                            <t t-else="">Đang làm</t>
+                                        </td>
+                                    </tr>
+                                    <t t-set="emp_stt" t-value="emp_stt + 1"/>
+                                    <t t-set="emp_total_hours" t-value="emp_total_hours + att.work_hours"/>
+                                </t>
+                                <tr style="background-color: #f9f9f9; font-weight: bold;">
+                                    <td colspan="4" style="text-align: right;">Tổng số giờ làm tích lũy:</td>
+                                    <td><t t-esc="'%.2f' % emp_total_hours"/> h</td>
+                                    <td style="color: red;">Đi muộn: <t t-esc="late_count"/> lần</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div class="row mt-5" style="display: flex; justify-content: space-between; margin-top: 50px;">
+                            <div class="col-6 text-center" style="width: 50%; float: left; text-align: center;">
+                                <p style="font-weight: bold; margin-bottom: 70px;">XÁC NHẬN CỦA NHÂN VIÊN</p>
+                                <p>(Ký, ghi rõ họ tên)</p>
+                            </div>
+                            <div class="col-6 text-center" style="width: 50%; float: right; text-align: center;">
+                                <p style="font-weight: bold; margin-bottom: 70px;">PHÒNG NHÂN SỰ XÁC NHẬN</p>
+                                <p>(Ký, đóng dấu)</p>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

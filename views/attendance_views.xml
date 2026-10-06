@@ -99,11 +99,12 @@
     </record>
 
     <!-- Action -->
-    <record id="action_attendance" model="ir.actions.act_window">
-        <field name="name">Bản ghi Chấm công</field>
+    <!-- Thêm Action riêng cho Báo cáo & Thống kê (Mặc định mở Biểu đồ Graph & Pivot) -->
+    <record id="action_attendance_report_dashboard" model="ir.actions.act_window">
+        <field name="name">Báo cáo &amp; Thống kê Chấm công</field>
         <field name="res_model">attendance.record</field>
-        <field name="view_mode">tree,form,graph,pivot</field>
+        <field name="view_mode">graph,pivot,tree</field>
         <field name="search_view_id" ref="view_attendance_search"/>
-        <field name="context">{'search_default_today': 1}</field>
+        <field name="context">{'search_default_group_dept': 1}</field>
     </record>
 </odoo>

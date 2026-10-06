@@ -21,11 +21,11 @@
               sequence="20"
               groups="group_attendance_hr,group_attendance_admin"/>
 
-    <!-- Menu con 3: Báo cáo & Thống kê -->
+    <!-- Menu con 3: Báo cáo & Thống kê (Gọi thẳng đến Dashboard Graph/Pivot) -->
     <menuitem id="menu_attendance_report"
               name="Báo cáo &amp; Thống kê"
               parent="menu_attendance_root"
-              action="action_attendance"
+              action="action_attendance_report_dashboard"
               sequence="30"
               groups="group_attendance_hr,group_attendance_admin"/>
 </odoo>

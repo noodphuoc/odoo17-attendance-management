@@ -20,6 +20,7 @@
         'views/employee_views.xml',
         'views/attendance_views.xml',
         'views/menu_views.xml',
+        'views/attendance_report.xml',
     ],
     'installable': True,
     'application': True,
