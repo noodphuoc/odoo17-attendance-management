@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Tree View -->
     <record id="view_employee_tree" model="ir.ui.view">
         <field name="name">attendance.employee.tree</field>
         <field name="model">attendance.employee</field>
@@ -19,7 +18,6 @@
         </field>
     </record>
 
-    <!-- Form View -->
     <record id="view_employee_form" model="ir.ui.view">
         <field name="name">attendance.employee.form</field>
         <field name="model">attendance.employee</field>
@@ -27,12 +25,8 @@
             <form string="Thông tin nhân viên">
                 <sheet>
                     <div class="oe_title">
-                        <h1>
-                            <field name="employee_code" placeholder="Mã nhân viên (ví dụ: NV01)"/>
-                        </h1>
-                        <h2>
-                            <field name="name" placeholder="Họ và tên nhân viên"/>
-                        </h2>
+                        <h1><field name="employee_code" placeholder="Mã nhân viên (ví dụ: NV01)"/></h1>
+                        <h2><field name="name" placeholder="Họ và tên nhân viên"/></h2>
                     </div>
                     <group>
                         <group string="Công việc">
@@ -65,7 +59,6 @@
         </field>
     </record>
 
-    <!-- Search View -->
     <record id="view_employee_search" model="ir.ui.view">
         <field name="name">attendance.employee.search</field>
         <field name="model">attendance.employee</field>
@@ -75,24 +68,14 @@
                 <field name="department"/>
                 <filter string="Đang làm việc" name="working" domain="[('status', '=', 'working')]"/>
                 <filter string="Đã nghỉ việc" name="resigned" domain="[('status', '=', 'resigned')]"/>
-                <group expand="0" string="Gom nhóm theo">
-                    <filter string="Phòng ban" name="group_by_department" context="{'group_by': 'department'}"/>
-                    <filter string="Trạng thái" name="group_by_status" context="{'group_by': 'status'}"/>
-                </group>
             </search>
         </field>
     </record>
 
-    <!-- Action -->
     <record id="action_employee" model="ir.actions.act_window">
         <field name="name">Quản lý Nhân viên</field>
         <field name="res_model">attendance.employee</field>
         <field name="view_mode">tree,form</field>
         <field name="search_view_id" ref="view_employee_search"/>
-        <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">
-                Bấm vào Tạo mới để thêm nhân viên đầu tiên!
-            </p>
-        </field>
     </record>
 </odoo>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- 1. Tree View -->
+    <!-- 1. Tree View (Danh sách chấm công) -->
     <record id="view_attendance_tree" model="ir.ui.view">
         <field name="name">attendance.record.tree</field>
         <field name="model">attendance.record</field>
@@ -21,25 +21,31 @@
         </field>
     </record>
 
-    <!-- 2. Form View -->
+    <!-- 2. Form View: Nút bấm to, tự động lưu khi bấm, không cần tìm nút đám mây -->
     <record id="view_attendance_form" model="ir.ui.view">
         <field name="name">attendance.record.form</field>
         <field name="model">attendance.record</field>
         <field name="arch" type="xml">
             <form string="Chi tiết chấm công">
                 <header>
-                    <button name="action_check_out" string="Chấm công ra" type="object" 
-                            class="oe_highlight" invisible="check_out != False"/>
+                    <!-- Nút Chấm công ra: Nút to màu đỏ, bấm là tự lưu -->
+                    <button name="action_check_out" 
+                            string="CHẤM CÔNG RA" 
+                            type="object" 
+                            class="oe_highlight btn-danger btn-lg" 
+                            invisible="check_out != False"
+                            style="font-weight: bold;"/>
+                    
                     <field name="status" widget="statusbar" statusbar_visible="working,on_time,late"/>
                 </header>
                 <sheet>
                     <group>
-                        <group string="Nhân sự">
-                            <field name="employee_id"/>
+                        <group string="Thông tin nhân sự">
+                            <field name="employee_id" options="{'no_create': True}"/>
                             <field name="department"/>
                             <field name="date"/>
                         </group>
-                        <group string="Thời gian">
+                        <group string="Thời gian làm việc">
                             <field name="check_in"/>
                             <field name="check_out"/>
                             <field name="work_hours" widget="float_time"/>
@@ -50,7 +56,7 @@
         </field>
     </record>
 
-    <!-- 3. Graph View cho Dashboard -->
+    <!-- 3. Graph View -->
     <record id="view_attendance_graph" model="ir.ui.view">
         <field name="name">attendance.record.graph</field>
         <field name="model">attendance.record</field>
@@ -62,7 +68,7 @@
         </field>
     </record>
 
-    <!-- 4. Pivot View cho Dashboard -->
+    <!-- 4. Pivot View -->
     <record id="view_attendance_pivot" model="ir.ui.view">
         <field name="name">attendance.record.pivot</field>
         <field name="model">attendance.record</field>
@@ -97,22 +103,16 @@
         </field>
     </record>
 
-    <!-- 6. Action cho Chấm công thường (action_attendance) -->
-    <!-- Action Chấm công: Luôn hiển thị bảng lịch sử, phía trên có bộ lọc hôm nay -->
+    <!-- 6. Action Chấm công chính -->
     <record id="action_attendance" model="ir.actions.act_window">
-        <field name="name">Lịch sử Chấm công</field>
+        <field name="name">Bản ghi Chấm công</field>
         <field name="res_model">attendance.record</field>
         <field name="view_mode">tree,form,graph,pivot</field>
         <field name="search_view_id" ref="view_attendance_search"/>
         <field name="context">{}</field>
-        <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">
-                Bấm vào nút "Tạo mới" hoặc dùng chức năng Check-in để bắt đầu ca làm việc!
-            </p>
-        </field>
     </record>
 
-    <!-- 7. Action cho Báo cáo & Thống kê (action_attendance_report_dashboard) -->
+    <!-- 7. Action Báo cáo & Thống kê Dashboard -->
     <record id="action_attendance_report_dashboard" model="ir.actions.act_window">
         <field name="name">Báo cáo &amp; Thống kê Chấm công</field>
         <field name="res_model">attendance.record</field>

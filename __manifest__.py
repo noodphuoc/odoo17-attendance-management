@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 {
     'name': "Quản lý Chấm công (Attendance Management)",
     'summary': "Module quản lý nhân viên và chấm công theo thời gian thực",

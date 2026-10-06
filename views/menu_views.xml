@@ -6,14 +6,14 @@
               web_icon="attendance_management,static/description/icon.png"
               sequence="10"/>
 
-    <!-- Menu 1: Dành cho tất cả mọi người (Nhân viên chỉ thấy của mình, Quản lý thấy hết) -->
+    <!-- 1. Màn hình chính theo dõi Chấm công 24/7 -->
     <menuitem id="menu_attendance_record"
               name="Bản ghi Chấm công"
               parent="menu_attendance_root"
               action="action_attendance"
               sequence="10"/>
 
-    <!-- Menu 2: Quản lý nhân sự (Chỉ HR/Admin thấy) -->
+    <!-- 2. Quản lý nhân sự (Chỉ HR/Admin thấy) -->
     <menuitem id="menu_attendance_employee"
               name="Nhân viên"
               parent="menu_attendance_root"
@@ -21,7 +21,7 @@
               sequence="20"
               groups="group_attendance_hr,group_attendance_admin"/>
 
-    <!-- Menu 3: Dashboard Báo cáo 24/7 (Chỉ HR/Admin thấy) -->
+    <!-- 3. Báo cáo & Thống kê (Chỉ HR/Admin thấy) -->
     <menuitem id="menu_attendance_report"
               name="Báo cáo &amp; Thống kê"
               parent="menu_attendance_root"

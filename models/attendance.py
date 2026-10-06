@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from odoo import models, fields, api
 from odoo.exceptions import ValidationError
 import pytz
@@ -8,7 +7,18 @@ class AttendanceRecord(models.Model):
     _description = 'Bản ghi chấm công'
     _order = 'check_in desc'
 
-    employee_id = fields.Many2one('attendance.employee', string='Nhân viên', required=True, ondelete='cascade')
+    # Hàm tự động tìm ID nhân viên ứng với tài khoản đang đăng nhập
+    def _default_employee_id(self):
+        emp = self.env['attendance.employee'].search([('user_id', '=', self.env.uid)], limit=1)
+        return emp.id if emp else False
+
+    employee_id = fields.Many2one(
+        'attendance.employee', 
+        string='Nhân viên', 
+        required=True, 
+        default=_default_employee_id,
+        ondelete='cascade'
+    )
     department = fields.Selection(related='employee_id.department', string='Phòng ban', store=True)
     date = fields.Date(string='Ngày', default=fields.Date.context_today, required=True)
     check_in = fields.Datetime(string='Giờ vào', default=fields.Datetime.now, required=True)

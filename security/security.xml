@@ -1,25 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Phân loại nhóm ứng dụng -->
     <record id="module_category_attendance" model="ir.module.category">
         <field name="name">Quản lý Chấm công</field>
         <field name="sequence">10</field>
     </record>
 
-    <!-- 1. Nhóm Nhân viên (Employee) -->
+    <!-- 1. Nhóm Nhân viên: Chấm công hàng ngày -->
     <record id="group_attendance_employee" model="res.groups">
-        <field name="name">Nhân viên</field>
+        <field name="name">Nhân viên (Chấm công cá nhân)</field>
         <field name="category_id" ref="module_category_attendance"/>
     </record>
 
-    <!-- 2. Nhóm Quản lý / HR (Manager) -->
+    <!-- 2. Nhóm Quản lý HR: Giám sát toàn công ty, KHÔNG cần chấm công -->
     <record id="group_attendance_hr" model="res.groups">
-        <field name="name">Quản lý / HR</field>
+        <field name="name">Quản lý / HR (Giám sát &amp; Báo cáo)</field>
         <field name="category_id" ref="module_category_attendance"/>
-        <field name="implied_ids" eval="[(4, ref('group_attendance_employee'))]"/>
     </record>
 
-    <!-- 3. Nhóm Quản trị viên (Admin) -->
+    <!-- 3. Nhóm Quản trị viên (Admin): Toàn quyền cấu hình 24/7 -->
     <record id="group_attendance_admin" model="res.groups">
         <field name="name">Quản trị viên</field>
         <field name="category_id" ref="module_category_attendance"/>
@@ -27,7 +25,7 @@
         <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
     </record>
 
-    <!-- RECORD RULES: Nhân viên chỉ xem được bản ghi chấm công của chính mình -->
+    <!-- RECORD RULES: Nhân viên chỉ thấy chấm công của mình -->
     <record id="rule_attendance_employee_own" model="ir.rule">
         <field name="name">Nhân viên: Xem chấm công của mình</field>
         <field name="model_id" ref="model_attendance_record"/>
@@ -39,9 +37,9 @@
         <field name="perm_unlink" eval="0"/>
     </record>
 
-    <!-- RECORD RULES: HR và Admin xem toàn bộ dữ liệu -->
-    <record id="rule_attendance_hr_all" model="ir.rule">
-        <field name="name">HR &amp; Admin: Xem toàn bộ chấm công</field>
+    <!-- RECORD RULES: HR & Admin xem toàn bộ 24/7 -->
+    <record id="rule_attendance_admin_all" model="ir.rule">
+        <field name="name">Admin &amp; HR: Xem toàn bộ chấm công</field>
         <field name="model_id" ref="model_attendance_record"/>
         <field name="groups" eval="[(4, ref('group_attendance_hr')), (4, ref('group_attendance_admin'))]"/>
         <field name="domain_force">[(1, '=', 1)]</field>
