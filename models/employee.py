@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from odoo import models, fields, api
 from odoo.exceptions import ValidationError
 
@@ -27,50 +28,70 @@ class AttendanceEmployee(models.Model):
 
     attendance_ids = fields.One2many('attendance.record', 'employee_id', string='Lịch sử chấm công')
 
-    # Các trường hiển thị trên Thẻ Chấm công hôm nay
+    # Trạng thái hiển thị trên Thẻ Chấm công
     attendance_state = fields.Selection([
         ('checked_out', 'Chưa vào làm / Đã tan ca'),
         ('checked_in', 'Đang làm việc')
-    ], string='Tình trạng ca làm', compute='_compute_today_attendance')
+    ], string='Tình trạng ca làm', compute='_compute_current_attendance', store=False)
     
-    today_check_in = fields.Datetime(string='Giờ vào hôm nay', compute='_compute_today_attendance')
-    today_check_out = fields.Datetime(string='Giờ ra hôm nay', compute='_compute_today_attendance')
-    today_work_hours = fields.Float(string='Giờ làm hôm nay', compute='_compute_today_attendance')
+    current_check_in = fields.Datetime(string='Giờ vào ca hiện tại', compute='_compute_current_attendance')
+    today_work_hours = fields.Float(string='Giờ làm hôm nay', compute='_compute_current_attendance')
 
     _sql_constraints = [
         ('unique_employee_code', 'unique(employee_code)', 'Lỗi: Mã nhân viên phải là duy nhất!')
     ]
 
-    # Tính toán thông tin ca làm hôm nay
-    def _compute_today_attendance(self):
-        today = fields.Date.context_today(self)
+    # FIX 1: Chặn đổi trạng thái sang "Đã nghỉ việc" nếu còn ca làm dở dang
+    @api.constrains('status')
+    def _check_status_resigned(self):
         for emp in self:
-            rec = self.env['attendance.record'].search([
-                ('employee_id', '=', emp.id),
-                ('date', '=', today)
-            ], order='check_in desc', limit=1)
-            
-            if rec:
-                emp.today_check_in = rec.check_in
-                emp.today_check_out = rec.check_out
-                emp.today_work_hours = rec.work_hours
-                emp.attendance_state = 'checked_in' if not rec.check_out else 'checked_out'
-            else:
-                emp.today_check_in = False
-                emp.today_check_out = False
-                emp.today_work_hours = 0.0
-                emp.attendance_state = 'checked_out'
+            if emp.status == 'resigned':
+                open_attendance = self.env['attendance.record'].search([
+                    ('employee_id', '=', emp.id),
+                    ('check_out', '=', False)
+                ], limit=1)
+                if open_attendance:
+                    raise ValidationError(
+                        f"Nhân viên {emp.name} vẫn còn ca chấm công chưa Check-out (từ lúc {open_attendance.check_in.strftime('%d/%m/%Y %H:%M')}). "
+                        "Vui lòng hoàn tất Check-out trước khi chuyển trạng thái nghỉ việc!"
+                    )
 
-    # Hành động khi bấm nút [ CHẤM CÔNG VÀO ]
+    # FIX 2 & 3: Bổ sung @api.depends và xử lý ca làm việc vắt qua đêm
+    @api.depends('attendance_ids.check_in', 'attendance_ids.check_out')
+    def _compute_current_attendance(self):
+        for emp in self:
+            # 1. Tìm ca làm đang mở gần nhất (kể cả check-in từ hôm trước qua đêm)
+            open_rec = self.env['attendance.record'].search([
+                ('employee_id', '=', emp.id),
+                ('check_out', '=', False)
+            ], order='check_in desc', limit=1)
+
+            if open_rec:
+                emp.attendance_state = 'checked_in'
+                emp.current_check_in = open_rec.check_in
+                emp.today_work_hours = 0.0
+            else:
+                emp.attendance_state = 'checked_out'
+                # Nếu đã checkout, lấy ca làm gần nhất trong ngày hôm nay để xem số giờ
+                today = fields.Date.context_today(self)
+                today_closed_rec = self.env['attendance.record'].search([
+                    ('employee_id', '=', emp.id),
+                    ('date', '=', today),
+                    ('check_out', '!=', False)
+                ], order='check_out desc', limit=1)
+                
+                emp.current_check_in = today_closed_rec.check_in if today_closed_rec else False
+                emp.today_work_hours = today_closed_rec.work_hours if today_closed_rec else 0.0
+
+    # Chấm công vào
     def action_btn_check_in(self):
         self.ensure_one()
-        # Kiểm tra xem có ca nào chưa checkout không
         open_rec = self.env['attendance.record'].search([
             ('employee_id', '=', self.id),
             ('check_out', '=', False)
         ], limit=1)
         if open_rec:
-            raise ValidationError("Bạn đang trong ca làm việc rồi, chưa Check-out!")
+            raise ValidationError(f"Bạn đang trong một ca làm việc (từ {open_rec.check_in.strftime('%H:%M')}), chưa thể Check-in tiếp!")
         
         self.env['attendance.record'].create({
             'employee_id': self.id,
@@ -78,24 +99,24 @@ class AttendanceEmployee(models.Model):
             'check_in': fields.Datetime.now(),
         })
 
-    # Hành động khi bấm nút [ CHẤM CÔNG RA ]
+    # Chấm công ra
     def action_btn_check_out(self):
         self.ensure_one()
         open_rec = self.env['attendance.record'].search([
             ('employee_id', '=', self.id),
             ('check_out', '=', False)
-        ], limit=1)
+        ], order='check_in desc', limit=1)
         if not open_rec:
-            raise ValidationError("Bạn chưa Check-in nên không thể Check-out!")
+            raise ValidationError("Bạn chưa thực hiện Check-in ca làm nào!")
         
         open_rec.action_check_out()
 
-    # Mở màn hình chấm công của tài khoản đang đăng nhập
+    # Mở màn hình điểm danh cá nhân
     @api.model
     def action_open_my_attendance(self):
         emp = self.search([('user_id', '=', self.env.uid)], limit=1)
         if not emp:
-            raise ValidationError("Tài khoản này là Quản trị viên hệ thống (Admin), không áp dụng chấm công ca làm cá nhân!")
+            raise ValidationError("Tài khoản của bạn chưa được liên kết với hồ sơ Nhân viên nào trong hệ thống! Vui lòng liên hệ HR.")
         
         return {
             'name': 'Chấm công hôm nay',
